@@ -1,0 +1,61 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard:home' %}">
+            <i class="fas fa-utensils me-2"></i>Bublydr POS
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if user.role == 'WAITER' or user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tables:list' %}">
+                        <i class="fas fa-chair me-1"></i>Столи
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'orders:list' %}">
+                        <i class="fas fa-clipboard-list me-1"></i>Замовлення
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'menu:list' %}">
+                        <i class="fas fa-book-open me-1"></i>Меню
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.role == 'ADMIN' or user.is_superuser %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" 
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-cogs me-1"></i>Управління
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                        <li><a class="dropdown-item" href="{% url 'dashboard:stats' %}">Статистика</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inventory:list' %}">Склад</a></li>
+                        <li><a class="dropdown-item" href="{% url 'menu:manage' %}">Меню</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:staff_list' %}">Персонал</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/admin/">Адмін-панель</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Профіль</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Вийти</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

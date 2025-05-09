@@ -1,0 +1,211 @@
+/* Основні стилі проєкту */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Стилі для карток */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Стилі для навігаційної панелі */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Стилі для різних статусів */
+.status-free {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-occupied {
+    background-color: #dc3545;
+    color: white;
+}
+
+.status-reserved {
+    background-color: #ffc107;
+    color: black;
+}
+
+.status-pending {
+    background-color: #007bff;
+    color: white;
+}
+
+.status-in-progress {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.status-ready {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-delivered {
+    background-color: #6610f2;
+    color: white;
+}
+
+.status-completed {
+    background-color: #6c757d;
+    color: white;
+}
+
+.status-canceled {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Стилі для форм */
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Стилі для кнопок */
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+    padding: 8px 20px;
+}
+
+/* Стилі для столів */
+.table-card {
+    height: 160px;
+    position: relative;
+    text-align: center;
+    cursor: pointer;
+}
+
+.table-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.table-capacity {
+    font-size: 1.1rem;
+}
+
+.table-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+/* Стилі для меню */
+.menu-item {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.menu-item-image {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+
+.menu-item-content {
+    flex-grow: 1;
+}
+
+.menu-item-price {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.menu-item-unavailable {
+    opacity: 0.5;
+}
+
+/* Стилі для сторінки замовлення */
+.order-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.order-total {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Стилі для сторінки чека */
+.receipt {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px dashed #ccc;
+    background-color: white;
+}
+
+.receipt-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.receipt-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.receipt-total {
+    border-top: 1px solid #000;
+    margin-top: 15px;
+    padding-top: 10px;
+    font-weight: bold;
+}
+
+/* Стилі для панелі адміністратора */
+.stats-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.stats-label {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 768px) {
+    .table-card {
+        height: 120px;
+    }
+    
+    .table-number {
+        font-size: 1.8rem;
+    }
+    
+    .menu-item-image {
+        width: 80px;
+        height: 60px;
+    }
+}

@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Віртуальне середовище
+venv/
+ENV/
+.env
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# PostgreSQL
+*.dump
+*.sql
+
+# Файли налаштувань IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Файли OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Тимчасові файли
+*.bak
+*.tmp
+*.swp
+*~
+
+# Інші файли
+node_modules/
+.coverage
+htmlcov/
+.pytest_cache/

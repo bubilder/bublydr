@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Замовлення #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1>Замовлення #{{ order.id }}</h1>
+        <p class="text-muted">Створено: {{ order.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Деталі замовлення</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Стіл:</strong> №{{ order.table.number }}</p>
+                        <p><strong>Офіціант:</strong> {{ order.waiter.get_full_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Статус:</strong> 
+                            <span class="badge {% if order.status == 'PENDING' %}bg-warning
+                                {% elif order.status == 'IN_PROGRESS' %}bg-info
+                                {% elif order.status == 'READY' %}bg-success
+                                {% elif order.status == 'DELIVERED' %}bg-primary
+                                {% elif order.status == 'COMPLETED' %}bg-dark
+                                {% elif order.status == 'CANCELED' %}bg-danger
+                                {% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Оплачено:</strong> {% if order.is_paid %}Так{% else %}Ні{% endif %}</p>
+                    </div>
+                </div>
+
+                {% if order.notes %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <p><strong>Примітки:</strong> {{ order.notes }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Страва</th>
+                                <th>Кількість</th>
+                                <th>Ціна за од.</th>
+                                <th>Сума</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.dish.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price }} грн</td>
+                                <td>{{ item.total_price }} грн</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Сума:</th>
+                                <th>{{ order.subtotal_price }} грн</th>
+                            </tr>
+                            {% if order.discount > 0 %}
+                            <tr>
+                                <th colspan="3" class="text-end">Знижка ({{ order.discount }}%):</th>
+                                <th>{{ order.discount_amount }} грн</th>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th colspan="3" class="text-end">Всього до оплати:</th>
+                                <th>{{ order.total_price }} грн</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Статус і дії -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Керування</h5>
+            </div>
+            <div class="card-body">
+                <!-- Оновлення статусу -->
+                {% if order.status not in 'COMPLETED,CANCELED' %}
+                <form action="{% url 'orders:update_status' order.id %}" method="post" class="mb-3">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Змінити статус:</label>
+                        <select name="status" id="status" class="form-select">
+                            {% for status_code, status_name in order.STATUS_CHOICES %}
+                            <option value="{{ status_code }}" {% if order.status == status_code %}selected{% endif %}>
+                                {{ status_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sync-alt me-2"></i>Оновити статус
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- Дії з замовленням -->
+                <div class="d-grid gap-2">
+                    {% if not order.is_paid and order.status != 'CANCELED' %}
+                    <a href="{% url 'orders:payment' order.id %}" class="btn btn-success">
+                        <i class="fas fa-money-bill-wave me-2"></i>Оплатити
+                    </a>
+                    {% endif %}
+                    
+                    {% if order.status not in 'COMPLETED,CANCELED' %}
+                    <a href="{% url 'orders:edit' order.id %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Редагувати
+                    </a>
+                    
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                        <i class="fas fa-times me-2"></i>Скасувати замовлення
+                    </button>
+                    {% endif %}
+
+                    {% if payment %}
+                    <a href="{% url 'payments:receipt' payment.id %}" class="btn btn-info">
+                        <i class="fas fa-receipt me-2"></i>Переглянути чек
+                    </a>
+                    <a href="{% url 'payments:receipt_pdf' payment.id %}" class="btn btn-secondary" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i>Зберегти чек (PDF)
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно для скасування замовлення -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Скасування замовлення</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Ви впевнені, що хочете скасувати це замовлення?</p>
+                <p>Ця дія не може бути скасована.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
+                <form action="{% url 'orders:cancel' order.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Скасувати замовлення</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

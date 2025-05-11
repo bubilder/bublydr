@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Рахунок #{{ order.id }} - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'orders:list' %}">Замовлення</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'orders:detail' order.id %}">Замовлення #{{ order.id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Рахунок</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Рахунок #{{ order.id }}</h4>
+                <button onclick="window.print();" class="btn btn-sm btn-light">
+                    <i class="bi bi-printer"></i> Друк
+                </button>
+            </div>
+            <div class="card-body" id="printable-bill">
+                <div class="text-center mb-4">
+                    <h2>Bublydr</h2>
+                    <p>Ресторанна система</p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <strong>Дата:</strong> {{ order.created_at|date:"d.m.Y" }}<br>
+                        <strong>Час:</strong> {{ order.created_at|time:"H:i" }}
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        {% if order.table %}
+                        <strong>Столик:</strong> №{{ order.table.number }}<br>
+                        {% endif %}
+                        <strong>Офіціант:</strong> {{ order.waiter.get_full_name|default:order.waiter.username }}
+                    </div>
+                </div>
+                
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Страва</th>
+                            <th class="text-end">Ціна</th>
+                            <th class="text-end">Кількість</th>
+                            <th class="text-end">Сума</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                        <tr>
+                            <td>{{ item.dish.name }}</td>
+                            <td class="text-end">{{ item.price|floatformat:2 }} грн</td>
+                            <td class="text-end">{{ item.quantity }}</td>
+                            <td class="text-end">{{ item.subtotal|floatformat:2 }} грн</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Немає страв для оплати</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Всього:</th>
+                            <th class="text-end">{{ order.total_price|floatformat:2 }} грн</th>
+                        </tr>
+                        {% if order.discount_percent > 0 %}
+                        <tr>
+                            <td colspan="3" class="text-end">Знижка ({{ order.discount_percent }}%):</td>
+                            <td class="text-end">-{{ order.total_price|floatformat:2 }} грн</td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">До сплати:</th>
+                            <th class="text-end">{{ order.total_price|floatformat:2 }} грн</th>
+                        </tr>
+                        {% endif %}
+                    </tfoot>
+                </table>
+                
+                <div class="text-center mt-5">
+                    <p>Дякуємо за візит! Чекаємо на Вас знову!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-4">
+            <a href="{% url 'orders:detail' order.id %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Повернутись до замовлення
+            </a>
+            {% if order.payment_status == 'pending' %}
+            <form method="post" action="{% url 'orders:complete' order.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Оплачено і завершено
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-bill, #printable-bill * {
+            visibility: visible;
+        }
+        #printable-bill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        .card {
+            border: none !important;
+        }
+    }
+</style>
+{% endblock %}

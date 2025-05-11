@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Звіт по столиках - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Панель керування</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Звіт по столиках</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Звіт по столиках</h1>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>№ столика</th>
+                        <th>Місць</th>
+                        <th>Розташування</th>
+                        <th>Кількість замовлень</th>
+                        <th>Сума замовлень</th>
+                        <th>Середній чек</th>
+                        <th>Кількість бронювань</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in table_stats %}
+                    <tr>
+                        <td>{{ stat.table.number }}</td>
+                        <td>{{ stat.table.capacity }}</td>
+                        <td>{{ stat.table.location }}</td>
+                        <td>{{ stat.orders_count }}</td>
+                        <td>{{ stat.orders_sum|floatformat:2 }} грн</td>
+                        <td>{{ stat.average_order|floatformat:2 }} грн</td>
+                        <td>{{ stat.reservations_count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center p-3">
+                            <span class="text-muted">Немає даних</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад до панелі керування
+    </a>
+</div>
+{% endblock %}

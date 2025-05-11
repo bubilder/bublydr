@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Платежі - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Платежі</h1>
+    <div>
+        <a href="{% url 'payments:report' %}" class="btn btn-outline-primary">
+            <i class="bi bi-graph-up"></i> Звіт
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Статистика -->
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Сьогодні</h5>
+                <h3 class="mb-0">{{ today_amount|floatformat:2 }} грн</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Усього</h5>
+                <h3 class="mb-0">{{ total_amount|floatformat:2 }} грн</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Фільтри -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Фільтри</h5>
+        <form method="get" class="row row-cols-md-auto g-3 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label" for="id_status">Статус</label>
+                {{ filter_form.status }}
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label" for="id_payment_method">Спосіб оплати</label>
+                {{ filter_form.payment_method }}
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label" for="id_date_from">Дата від</label>
+                {{ filter_form.date_from }}
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label" for="id_date_to">Дата до</label>
+                {{ filter_form.date_to }}
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter"></i> Фільтрувати
+                    </button>
+                    <a href="{% url 'payments:list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Скинути
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Замовлення</th>
+                        <th>Сума</th>
+                        <th>Спосіб оплати</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th>Касир</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.id }}</td>
+                        <td>
+                            <a href="{% url 'orders:detail' payment.order.id %}">
+                                Замовлення #{{ payment.order.id }}
+                            </a>
+                        </td>
+                        <td>{{ payment.amount|floatformat:2 }} грн</td>
+                        <td>{{ payment.get_payment_method_display }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if payment.status == 'pending' %}bg-warning text-dark{% endif %}
+                                {% if payment.status == 'completed' %}bg-success{% endif %}
+                                {% if payment.status == 'failed' %}bg-danger{% endif %}
+                                {% if payment.status == 'refunded' %}bg-info{% endif %}
+                            ">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                        <td>{{ payment.cashier.get_full_name|default:payment.cashier.username }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'payments:detail' payment.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-info-circle"></i>
+                                </a>
+                                {% if payment.status == 'pending' %}
+                                <a href="{% url 'payments:complete' payment.id %}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-check-circle"></i>
+                                </a>
+                                {% endif %}
+                                {% if payment.status == 'completed' %}
+                                <a href="{% url 'payments:receipt' payment.id %}" class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="text-muted">Платежі відсутні</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

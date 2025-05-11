@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}Контроль запасів - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Контроль запасів ресторану</h1>
+    <div>
+        <div class="dropdown d-inline-block">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="reportsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-graph-up"></i> Звіти
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                <li><a class="dropdown-item" href="{% url 'inventory:report_inventory_value' %}">Вартість запасів</a></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:report_low_stock' %}">Продукти з низьким запасом</a></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:report_consumptions' %}">Списання продуктів</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Статистика -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Загальна статистика</h5>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Загальна кількість продуктів:</span>
+                    <strong>{{ total_products }}</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Продукти з низьким запасом:</span>
+                    <strong class="{% if low_stock_count > 0 %}text-danger{% endif %}">{{ low_stock_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Загальна вартість запасів:</span>
+                    <strong>{{ total_value|floatformat:2 }} грн</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Швидкі дії</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:product_list' %}" class="btn btn-outline-primary d-block">
+                            <i class="bi bi-box"></i> Список продуктів
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:product_add' %}" class="btn btn-outline-success d-block">
+                            <i class="bi bi-plus-circle"></i> Додати продукт
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:purchase_list' %}" class="btn btn-outline-primary d-block">
+                            <i class="bi bi-bag"></i> Закупівлі
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:purchase_add' %}" class="btn btn-outline-success d-block">
+                            <i class="bi bi-cart-plus"></i> Нова закупівля
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:consumption_list' %}" class="btn btn-outline-primary d-block">
+                            <i class="bi bi-arrow-down-circle"></i> Списання
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:consumption_add' %}" class="btn btn-outline-warning d-block">
+                            <i class="bi bi-dash-circle"></i> Нове списання
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:recipe_list' %}" class="btn btn-outline-primary d-block">
+                            <i class="bi bi-journal-text"></i> Рецепти
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{% url 'inventory:supplier_list' %}" class="btn btn-outline-primary d-block">
+                            <i class="bi bi-truck"></i> Постачальники
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Продукти з низьким запасом -->
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Продукти з низьким запасом</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Назва продукту</th>
+                                <th>Категорія</th>
+                                <th>Запас</th>
+                                <th>Мінімум</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in low_stock_products %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'inventory:product_detail' product.id %}">
+                                        {{ product.name }}
+                                    </a>
+                                </td>
+                                <td>{{ product.category.name|default:"-" }}</td>
+                                <td class="text-danger">{{ product.current_quantity }} {{ product.unit.short_name }}</td>
+                                <td>{{ product.minimum_quantity }} {{ product.unit.short_name }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center p-3">
+                                    <span class="text-success">Всі продукти мають достатню кількість запасів!</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if low_stock_count > 0 %}
+                <div class="card-footer text-end">
+                    <a href="{% url 'inventory:report_low_stock' %}" class="btn btn-sm btn-outline-warning">
+                        Переглянути всі <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Останні закупівлі -->
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Останні закупівлі</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Постачальник</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for purchase in recent_purchases %}
+                            <tr>
+                                <td>{{ purchase.id }}</td>
+                                <td>{{ purchase.supplier.name }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if purchase.status == 'pending' %}bg-warning text-dark{% endif %}
+                                        {% if purchase.status == 'ordered' %}bg-primary{% endif %}
+                                        {% if purchase.status == 'delivered' %}bg-success{% endif %}
+                                        {% if purchase.status == 'cancelled' %}bg-danger{% endif %}
+                                    ">
+                                        {{ purchase.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ purchase.created_at|date:"d.m.Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center p-3">
+                                    <span class="text-muted">Закупівлі відсутні</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{% url 'inventory:purchase_list' %}" class="btn btn-sm btn-outline-primary">
+                        Переглянути всі <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Останні списання -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Останні списання продуктів</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Продукт</th>
+                                <th>Кількість</th>
+                                <th>Причина</th>
+                                <th>Працівник</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consumption in recent_consumptions %}
+                            <tr>
+                                <td>{{ consumption.product.name }}</td>
+                                <td>{{ consumption.quantity }} {{ consumption.product.unit.short_name }}</td>
+                                <td>{{ consumption.get_reason_display }}</td>
+                                <td>{{ consumption.created_by.get_full_name|default:consumption.created_by.username }}</td>
+                                <td>{{ consumption.created_at|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-3">
+                                    <span class="text-muted">Списання продуктів відсутні</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{% url 'inventory:consumption_list' %}" class="btn btn-sm btn-outline-info">
+                        Переглянути всі <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

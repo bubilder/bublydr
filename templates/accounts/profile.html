@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Мій профіль - Bublydr{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Інформація профілю</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" class="rounded-circle img-fluid mb-3" style="max-width: 150px;">
+                {% else %}
+                <div class="mb-3 text-center">
+                    <i class="bi bi-person-circle" style="font-size: 7rem; color: #ccc;"></i>
+                </div>
+                {% endif %}
+                
+                <h4>{{ user.get_full_name }}</h4>
+                <p class="text-muted">{{ user.get_user_type_display }}</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i> Редагувати профіль
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Деталі користувача</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%;">Логін:</th>
+                            <td>{{ user.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ім'я:</th>
+                            <td>{{ user.first_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Прізвище:</th>
+                            <td>{{ user.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Електронна пошта:</th>
+                            <td>{{ user.email|default:"Не вказано" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Телефон:</th>
+                            <td>{{ user.phone|default:"Не вказано" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Адреса:</th>
+                            <td>{{ user.address|default:"Не вказано" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Тип користувача:</th>
+                            <td>{{ user.get_user_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Дата реєстрації:</th>
+                            <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                {% if user.is_admin %}
+                <div class="mt-4">
+                    <h5>Адміністративні дії</h5>
+                    <div class="list-group">
+                        <a href="{% url 'accounts:users_list' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-people"></i> Управління користувачами
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-person-plus"></i> Створити нового користувача
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-gear"></i> Адмін-панель Django
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

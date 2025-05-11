@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронювання - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'tables:list' %}">Столики</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables:reservation_list' %}">Бронювання</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Деталі бронювання</li>
+    </ol>
+</nav>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <span class="badge {% if reservation.status == 'confirmed' %}bg-success{% elif reservation.status == 'pending' %}bg-warning text-dark{% elif reservation.status == 'cancelled' %}bg-danger{% else %}bg-info{% endif %} float-end">
+            {{ reservation.get_status_display }}
+        </span>
+        <h4 class="card-title mb-0">Бронювання #{{ reservation.id }}</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <h5 class="mb-3">Інформація про бронювання</h5>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th style="width: 150px;">Столик:</th>
+                            <td>
+                                <a href="{% url 'tables:detail' reservation.table.id %}">
+                                    Столик №{{ reservation.table.number }}
+                                    ({{ reservation.table.capacity }} місць, {{ reservation.table.location }})
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Дата:</th>
+                            <td>{{ reservation.reservation_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Час:</th>
+                            <td>{{ reservation.reservation_time|time:"H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Тривалість:</th>
+                            <td>{{ reservation.duration }} хвилин</td>
+                        </tr>
+                        <tr>
+                            <th>Кількість гостей:</th>
+                            <td>{{ reservation.guests_count }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5 class="mb-3 mt-4">Інформація про клієнта</h5>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th style="width: 150px;">Ім'я:</th>
+                            <td>{{ reservation.customer_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Телефон:</th>
+                            <td>{{ reservation.customer_phone }}</td>
+                        </tr>
+                        {% if reservation.customer_email %}
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ reservation.customer_email }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if reservation.notes %}
+                        <tr>
+                            <th>Примітки:</th>
+                            <td>{{ reservation.notes }}</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                
+                <h5 class="mb-3 mt-4">Системна інформація</h5>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th style="width: 150px;">Створено:</th>
+                            <td>{{ reservation.created_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Оновлено:</th>
+                            <td>{{ reservation.updated_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Дії</h5>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'tables:edit_reservation' reservation.id %}" class="btn btn-primary">
+                                <i class="bi bi-pencil"></i> Редагувати бронювання
+                            </a>
+                            <a href="{% url 'tables:reservation_list' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Повернутися до списку
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

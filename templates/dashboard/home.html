@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Панель керування - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Панель керування</h1>
+    <div>
+        <a href="{% url 'dashboard:sales_report' %}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-graph-up"></i> Звіт з продажів
+        </a>
+        <a href="{% url 'dashboard:tables_report' %}" class="btn btn-outline-primary">
+            <i class="bi bi-table"></i> Звіт по столиках
+        </a>
+    </div>
+</div>
+
+<!-- Основні показники -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Дохід сьогодні</h5>
+                <h2>{{ revenue_today|floatformat:2 }} грн</h2>
+                <div class="small">Вчора: {{ revenue_yesterday|floatformat:2 }} грн</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Замовлення сьогодні</h5>
+                <h2>{{ orders_today }}</h2>
+                <div class="small">Вчора: {{ orders_yesterday }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Бронювання сьогодні</h5>
+                <h2>{{ reservations_today }}</h2>
+                <div class="small">Завтра: {{ reservations_tomorrow }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">Вільні столики</h5>
+                <h2>{{ free_tables }} / {{ total_tables }}</h2>
+                <div class="small">Зайнято: {{ occupied_tables }}, Заброньовано: {{ reserved_tables }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Активні замовлення -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Активні замовлення</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Столик</th>
+                                <th>Статус</th>
+                                <th>Сума</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in active_orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{% if order.table %}№{{ order.table.number }}{% else %}-{% endif %}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if order.status == 'new' %}bg-info{% endif %}
+                                        {% if order.status == 'processing' %}bg-primary{% endif %}
+                                        {% if order.status == 'ready' %}bg-warning text-dark{% endif %}
+                                        {% if order.status == 'delivered' %}bg-success{% endif %}
+                                    ">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ order.total_price|floatformat:2 }} грн</td>
+                                <td>
+                                    <a href="{% url 'orders:detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-3">
+                                    <span class="text-muted">Немає активних замовлень</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Популярні страви -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Найпопулярніші страви</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Назва страви</th>
+                                <th>Кількість замовлень</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dish in popular_dishes %}
+                            <tr>
+                                <td>{{ dish.dish__name }}</td>
+                                <td>{{ dish.total_ordered }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center p-3">
+                                    <span class="text-muted">Немає даних про популярні страви</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Найближчі бронювання -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Найближчі бронювання</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Час</th>
+                                <th>Столик</th>
+                                <th>Клієнт</th>
+                                <th>Гостей</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in upcoming_reservations %}
+                            <tr>
+                                <td>{{ reservation.reservation_date|date:"d.m.Y" }}</td>
+                                <td>{{ reservation.reservation_time|time:"H:i" }}</td>
+                                <td>№{{ reservation.table.number }}</td>
+                                <td>{{ reservation.customer_name }}</td>
+                                <td>{{ reservation.guests_count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-3">
+                                    <span class="text-muted">Немає найближчих бронювань</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Продукти з низьким запасом -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Продукти з низьким запасом</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Назва</th>
+                                <th>Поточний запас</th>
+                                <th>Мінімальний запас</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in low_stock_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td class="text-danger">{{ product.current_quantity }} {{ product.unit.short_name }}</td>
+                                <td>{{ product.minimum_quantity }} {{ product.unit.short_name }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center p-3">
+                                    <span class="text-success">Всі продукти мають достатній запас</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

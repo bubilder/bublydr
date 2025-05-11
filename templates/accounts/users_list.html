@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Користувачі - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Управління користувачами</h1>
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Додати користувача
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Користувач</th>
+                        <th>Тип</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Дата реєстрації</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" class="rounded-circle me-2" width="32" height="32">
+                                {% else %}
+                                <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                                {% endif %}
+                                <div>
+                                    <div>{{ user.get_full_name|default:user.username }}</div>
+                                    <small class="text-muted">@{{ user.username }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ user.get_user_type_display }}</td>
+                        <td>{{ user.email|default:"—" }}</td>
+                        <td>{{ user.phone|default:"—" }}</td>
+                        <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                        <td>
+                            {% if user.is_active %}
+                            <span class="badge bg-success">Активний</span>
+                            {% else %}
+                            <span class="badge bg-danger">Заблокований</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="py-5">
+                                <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
+                                <p class="mt-3">Поки що немає користувачів</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

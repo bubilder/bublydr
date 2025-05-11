@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Платіж #{{ payment.id }} - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'payments:list' %}">Платежі</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Платіж #{{ payment.id }}</li>
+    </ol>
+</nav>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Платіж #{{ payment.id }}</h4>
+                    <span class="badge 
+                        {% if payment.status == 'pending' %}bg-warning text-dark{% endif %}
+                        {% if payment.status == 'completed' %}bg-success{% endif %}
+                        {% if payment.status == 'failed' %}bg-danger{% endif %}
+                        {% if payment.status == 'refunded' %}bg-info{% endif %}
+                    ">
+                        {{ payment.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="mb-3">Інформація про платіж</h5>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Замовлення:</th>
+                            <td>
+                                <a href="{% url 'orders:detail' payment.order.id %}">
+                                    Замовлення #{{ payment.order.id }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Сума:</th>
+                            <td>{{ payment.amount|floatformat:2 }} грн</td>
+                        </tr>
+                        <tr>
+                            <th>Спосіб оплати:</th>
+                            <td>{{ payment.get_payment_method_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Статус:</th>
+                            <td>
+                                <span class="badge 
+                                    {% if payment.status == 'pending' %}bg-warning text-dark{% endif %}
+                                    {% if payment.status == 'completed' %}bg-success{% endif %}
+                                    {% if payment.status == 'failed' %}bg-danger{% endif %}
+                                    {% if payment.status == 'refunded' %}bg-info{% endif %}
+                                ">
+                                    {{ payment.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Касир:</th>
+                            <td>{{ payment.cashier.get_full_name|default:payment.cashier.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>Створено:</th>
+                            <td>{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                        {% if payment.completed_at %}
+                        <tr>
+                            <th>Завершено:</th>
+                            <td>{{ payment.completed_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payment.transaction_id %}
+                        <tr>
+                            <th>Номер транзакції:</th>
+                            <td>{{ payment.transaction_id }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if payment.notes %}
+                        <tr>
+                            <th>Примітки:</th>
+                            <td>{{ payment.notes }}</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                
+                {% if payment.status == 'pending' %}
+                <div class="mt-4 d-grid gap-2">
+                    <a href="{% url 'payments:complete' payment.id %}" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Завершити платіж
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Швидкі дії</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'orders:detail' payment.order.id %}" class="btn btn-outline-primary">
+                        <i class="bi bi-eye"></i> Переглянути замовлення
+                    </a>
+                    
+                    {% if payment.status == 'completed' %}
+                    <a href="{% url 'payments:receipt' payment.id %}" class="btn btn-outline-dark">
+                        <i class="bi bi-receipt"></i> Переглянути чек
+                    </a>
+                    
+                    <a href="{% url 'payments:refund' payment.id %}" class="btn btn-outline-danger">
+                        <i class="bi bi-arrow-return-left"></i> Повернути платіж
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'payments:list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад до списку
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if hasattr_payment_receipt %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Інформація про чек</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Номер чека:</th>
+                            <td>{{ payment.receipt.receipt_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Створено:</th>
+                            <td>{{ payment.receipt.created_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Надрукований:</th>
+                            <td>
+                                {% if payment.receipt.is_printed %}
+                                <i class="bi bi-check-circle text-success"></i> Так
+                                {% else %}
+                                <i class="bi bi-x-circle text-danger"></i> Ні
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{% url 'payments:receipt' payment.id %}" class="btn btn-primary">
+                        <i class="bi bi-receipt"></i> Переглянути чек
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

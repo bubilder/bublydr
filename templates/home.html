@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Головна - Bublydr{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Система управління рестораном Bublydr</h1>
+        <p class="lead">Вітаємо в системі управління рестораном. Оберіть розділ для роботи.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-journal-text" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Меню</h5>
+                    <p class="card-text">Управління категоріями страв і напоїв, додавання та редагування позицій меню.</p>
+                    <a href="{% url 'menu:list' %}" class="btn btn-primary">Перейти до меню</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-table" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Столики</h5>
+                    <p class="card-text">Управління столиками, бронювання та перегляд статусу столиків.</p>
+                    <a href="{% url 'tables:list' %}" class="btn btn-primary">Перейти до столиків</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cart4" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Замовлення</h5>
+                    <p class="card-text">Створення та управління замовленнями, додавання страв до замовлення.</p>
+                    <a href="{% url 'orders:list' %}" class="btn btn-primary">Перейти до замовлень</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cash-coin" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Оплати</h5>
+                    <p class="card-text">Обробка оплат замовлень, формування чеків та звітів.</p>
+                    <a href="{% url 'payments:list' %}" class="btn btn-primary">Перейти до оплат</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Користувачі</h5>
+                    <p class="card-text">Управління користувачами системи та їх правами.</p>
+                    <a href="{% url 'admin:index' %}" class="btn btn-primary">Адміністрування</a>                </div>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Запаси</h5>
+                    <p class="card-text">Управління запасами, закупівлями та списаннями продуктів.</p>
+                    <a href="{% url 'inventory:dashboard' %}" class="btn btn-primary">Перейти до запасів</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-speedometer2" style="font-size: 3rem; color: #0d6efd;"></i>
+                    <h5 class="card-title mt-3">Панель керування</h5>
+                    <p class="card-text">Загальна статистика, звіти та аналіз даних ресторану.</p>
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-primary">Перейти до панелі</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Зміна статусу замовлення - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'orders:list' %}">Замовлення</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'orders:detail' order.id %}">Замовлення #{{ order.id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Зміна статусу</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Зміна статусу замовлення #{{ order.id }}</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.status|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.payment_status|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Увага!
+                        <ul class="mb-0">
+                            <li>При встановленні статусу "Завершено", замовлення буде позначено як виконане.</li>
+                            <li>При встановленні статусу "Скасовано", якщо столик був зайнятий, він буде позначений як вільний.</li>
+                            <li>Після встановлення статусу "Завершено" або "Скасовано", редагування замовлення буде неможливим.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Оновити статус
+                        </button>
+                        <a href="{% url 'orders:detail' order.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Скасувати
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

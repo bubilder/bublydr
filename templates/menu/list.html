@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Меню - Bublydr{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Меню ресторану</h1>
+
+<div class="row">
+    {% for category in categories %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if category.image %}
+            <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}">
+            {% else %}
+            <div class="card-img-top bg-light text-center py-5">
+                <i class="bi bi-image" style="font-size: 3rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ category.name }}</h5>
+                {% if category.description %}
+                <p class="card-text">{{ category.description }}</p>
+                {% endif %}
+                <a href="{% url 'menu:category_detail' category.id %}" class="btn btn-primary">
+                    Переглянути страви
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            На даний момент категорії відсутні.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

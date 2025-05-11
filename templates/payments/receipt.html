@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Чек - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'payments:list' %}">Платежі</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'payments:detail' payment.id %}">Платіж #{{ payment.id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Чек</li>
+    </ol>
+</nav>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Чек #{{ receipt.receipt_number }}</h4>
+                    <div>
+                        <a href="{% url 'payments:print_receipt' payment.id %}" class="btn btn-sm btn-light">
+                            <i class="bi bi-printer"></i> Друк
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="receipt-content" class="border p-3" style="font-family: monospace; font-size: 0.9rem; white-space: pre-wrap;">
+                    {{ receipt.content|default:"Чек не згенеровано" }}
+                </div>
+                
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'payments:detail' payment.id %}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left"></i> Назад до платежу
+                        </a>
+                        <a href="{% url 'orders:detail' payment.order.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-eye"></i> Переглянути замовлення
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

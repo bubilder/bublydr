@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Бронювання - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Бронювання столиків</h1>
+    <a href="{% url 'tables:create_reservation' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Нове бронювання
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Столик</th>
+                        <th>Дата і час</th>
+                        <th>Клієнт</th>
+                        <th>Телефон</th>
+                        <th>Гостей</th>
+                        <th>Статус</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                    <tr>
+                        <td>Столик №{{ reservation.table.number }}</td>
+                        <td>{{ reservation.reservation_date|date:"d.m.Y" }} {{ reservation.reservation_time|time:"H:i" }}</td>
+                        <td>{{ reservation.customer_name }}</td>
+                        <td>{{ reservation.customer_phone }}</td>
+                        <td>{{ reservation.guests_count }}</td>
+                        <td>
+                            <span class="badge {% if reservation.status == 'confirmed' %}bg-success{% elif reservation.status == 'pending' %}bg-warning text-dark{% elif reservation.status == 'cancelled' %}bg-danger{% else %}bg-info{% endif %}">
+                                {{ reservation.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'tables:reservation_detail' reservation.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                            <a href="{% url 'tables:edit_reservation' reservation.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">Бронювання відсутні</div>
+                            <a href="{% url 'tables:create_reservation' %}" class="btn btn-sm btn-primary mt-2">
+                                Створити перше бронювання
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'tables:list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> Назад до списку столиків
+    </a>
+</div>
+{% endblock %}

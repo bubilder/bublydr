@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Додавання інгредієнта - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'inventory:dashboard' %}">Контроль запасів</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'inventory:recipe_list' %}">Рецепти</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'inventory:recipe_detail' recipe.id %}">{{ recipe.dish.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Додавання інгредієнта</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Додавання інгредієнта до рецепту "{{ recipe.dish.name }}"</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.product|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.quantity|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    {{ form.notes|as_crispy_field }}
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Додати
+                        </button>
+                        
+                        <button type="submit" name="add_another" value="1" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-square"></i> Додати і ще один
+                        </button>
+                        
+                        <a href="{% url 'inventory:recipe_detail' recipe.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Скасувати
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

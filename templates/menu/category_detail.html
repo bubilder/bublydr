@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - Меню - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'menu:list' %}">Меню</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+    </ol>
+</nav>
+
+<h1 class="mb-4">{{ category.name }}</h1>
+
+{% if category.description %}
+<div class="mb-4">
+    <p>{{ category.description }}</p>
+</div>
+{% endif %}
+
+<div class="row">
+    {% for dish in dishes %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    {% if dish.image %}
+                    <img src="{{ dish.image.url }}" class="img-fluid rounded-start h-100 w-100 object-fit-cover" 
+                         alt="{{ dish.name }}" style="object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light text-center h-100 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-image" style="font-size: 2rem;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ dish.name }}</h5>
+                        <p class="card-text">
+                            <small class="text-body-secondary">{{ dish.price }} грн</small>
+                        </p>
+                        {% if dish.description %}
+                        <p class="card-text">{{ dish.description|truncatewords:15 }}</p>
+                        {% endif %}
+                        <div class="mt-2">
+                            {% if dish.is_vegetarian %}
+                            <span class="badge bg-success">Вегетаріанська</span>
+                            {% endif %}
+                            {% if dish.is_spicy %}
+                            <span class="badge bg-danger">Гостра</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'menu:dish_detail' dish.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                            Детальніше
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            У цій категорії поки немає страв.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

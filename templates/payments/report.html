@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Звіт з платежів - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Звіт з платежів</h1>
+    <a href="{% url 'payments:list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> До списку платежів
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Період</h5>
+                <p class="mb-0">{{ start_date|date:"d.m.Y" }} - {{ end_date|date:"d.m.Y" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Загальна сума</h5>
+                <h3 class="mb-0">{{ total_amount|floatformat:2 }} грн</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Кількість платежів</h5>
+                <h3 class="mb-0">{{ total_payments }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Розподіл за способами оплати -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Розподіл за способами оплати</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for method in payment_methods_stats %}
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ method.get_payment_method_display }}</h6>
+                        <h4 class="text-primary mb-0">{{ method.total|floatformat:2 }} грн</h4>
+                        <small class="text-muted">{{ method.count }} платежів</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Щоденна статистика -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Щоденна статистика</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Кількість</th>
+                        <th>Загальна сума</th>
+                        <th>Готівка</th>
+                        <th>Карта</th>
+                        <th>Онлайн</th>
+                        <th>Переказ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_stats %}
+                    <tr>
+                        <td>{{ day.date|date:"d.m.Y (D)" }}</td>
+                        <td>{{ day.count }}</td>
+                        <td><strong>{{ day.total|floatformat:2 }} грн</strong></td>
+                        <td>{{ day.cash|floatformat:2 }} грн</td>
+                        <td>{{ day.card|floatformat:2 }} грн</td>
+                        <td>{{ day.online|floatformat:2 }} грн</td>
+                        <td>{{ day.transfer|floatformat:2 }} грн</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">Дані відсутні</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

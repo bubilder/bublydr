@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Звіт з продажів - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Панель керування</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Звіт з продажів</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ title }}</h1>
+</div>
+
+<!-- Фільтри для звіту -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Період</label>
+                <select name="period" class="form-select" onchange="toggleCustomDateInputs(this.value)">
+                    <option value="today" {% if period == 'today' %}selected{% endif %}>Сьогодні</option>
+                    <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Вчора</option>
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>Поточний тиждень</option>
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>Поточний місяць</option>
+                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>Власний період</option>
+                </select>
+            </div>
+            
+            <div id="custom-date-inputs" class="row g-3" style="display: {% if period == 'custom' %}flex{% else %}none{% endif %};">
+                <div class="col-md-3">
+                    <label class="form-label">Початкова дата</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Кінцева дата</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+            </div>
+            
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter"></i> Застосувати фільтри
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Загальна статистика -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Загальна сума продажів</h5>
+                <h2>{{ total_revenue|floatformat:2 }} грн</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Кількість замовлень</h5>
+                <h2>{{ total_orders }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Середній чек</h5>
+                <h2>{{ average_order_value|floatformat:2 }} грн</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Популярні страви -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Топ-10 популярних страв</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Назва страви</th>
+                                <th>Кількість</th>
+                                <th>Сума</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dish in popular_dishes %}
+                            <tr>
+                                <td>{{ dish.dish__name }}</td>
+                                <td>{{ dish.count }}</td>
+                                <td>{{ dish.total_revenue|floatformat:2 }} грн</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center p-3">
+                                    <span class="text-muted">Немає даних</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Продажі за категоріями -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Продажі за категоріями</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Категорія</th>
+                                <th>Кількість замовлень</th>
+                                <th>Сума</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in sales_by_category %}
+                            <tr>
+                                <td>{{ category.dish__category__name|default:"Без категорії" }}</td>
+                                <td>{{ category.count }}</td>
+                                <td>{{ category.total_revenue|floatformat:2 }} грн</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center p-3">
+                                    <span class="text-muted">Немає даних</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад до панелі керування
+    </a>
+</div>
+
+<script>
+    function toggleCustomDateInputs(value) {
+        var customDateInputs = document.getElementById('custom-date-inputs');
+        if (value === 'custom') {
+            customDateInputs.style.display = 'flex';
+        } else {
+            customDateInputs.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

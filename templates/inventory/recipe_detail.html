@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ recipe.dish.name }} - Рецепт - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'inventory:dashboard' %}">Контроль запасів</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'inventory:recipe_list' %}">Рецепти</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ recipe.dish.name }}</li>
+    </ol>
+</nav>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Рецепт: {{ recipe.dish.name }}</h4>
+                <span class="badge {% if recipe.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if recipe.is_active %}Активний{% else %}Неактивний{% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Інформація про страву</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Категорія: <span>{{ recipe.dish.category.name|default:"-" }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Ціна: <span>{{ recipe.dish.price|floatformat:2 }} грн</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Собівартість: <span>{{ recipe.ingredient_cost|floatformat:2 }} грн</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Наявність: 
+                                <span class="{% if recipe.dish.is_available %}text-success{% else %}text-danger{% endif %}">
+                                    {% if recipe.dish.is_available %}В наявності{% else %}Відсутня{% endif %}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Статус рецепта</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Дата створення: <span>{{ recipe.created_at|date:"d.m.Y" }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Останнє оновлення: <span>{{ recipe.updated_at|date:"d.m.Y" }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Кількість інгредієнтів: <span>{{ recipe.ingredients.count }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                {% if recipe.description %}
+                <div class="mb-4">
+                    <h5>Опис приготування</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            {{ recipe.description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div>
+                    <a href="{% url 'inventory:recipe_edit' recipe.id %}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Редагувати рецепт
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Інгредієнти рецепта -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Інгредієнти</h5>
+                <a href="{% url 'inventory:recipe_add_ingredient' recipe.id %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Додати інгредієнт
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Продукт</th>
+                                <th>Кількість</th>
+                                <th>Одиниця виміру</th>
+                                <th>Вартість</th>
+                                <th>Примітки</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ingredient in recipe.ingredients.all %}
+                            <tr>
+                                <td>{{ ingredient.product.name }}</td>
+                                <td>{{ ingredient.quantity }}</td>
+                                <td>{{ ingredient.product.unit.short_name }}</td>
+                                <td>{{ ingredient.cost|floatformat:2 }} грн</td>
+                                <td>{{ ingredient.notes|default:"-" }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'inventory:recipe_remove_ingredient' recipe.id ingredient.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Видалити цей інгредієнт?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center p-3">
+                                    <span class="text-muted">Інгредієнти відсутні</span>
+                                    <div class="mt-2">
+                                        <a href="{% url 'inventory:recipe_add_ingredient' recipe.id %}" class="btn btn-sm btn-primary">
+                                            Додати перший інгредієнт
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            {% if recipe.ingredients.exists %}
+                            <tr class="table-primary">
+                                <td colspan="3" class="text-end fw-bold">Загальна собівартість:</td>
+                                <td class="fw-bold">{{ recipe.ingredient_cost|floatformat:2 }} грн</td>
+                                <td colspan="2"></td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Швидкі дії</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'inventory:recipe_add_ingredient' recipe.id %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Додати інгредієнт
+                    </a>
+                    <a href="{% url 'inventory:recipe_edit' recipe.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil"></i> Редагувати рецепт
+                    </a>
+                    <a href="{% url 'inventory:recipe_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> До списку рецептів
+                    </a>
+                    <a href="{% url 'menu:dish_detail' recipe.dish.id %}" class="btn btn-outline-info">
+                        <i class="bi bi-eye"></i> Переглянути страву в меню
+                    </a>
+                </div>
+                
+                <hr>
+                
+                <h6>Корисна інформація:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-info-circle"></i> Додайте всі необхідні інгредієнти для коректного обчислення собівартості страви.</li>
+                    <li class="mt-2"><i class="bi bi-graph-up"></i> Різниця між ціною страви і собівартістю: 
+                        {% if recipe.dish.price and recipe.ingredient_cost %}
+                            <strong>{{ recipe.dish.price|floatformat:2 }} грн</strong>
+                        {% else %}
+                            <span class="text-muted">недостатньо даних</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

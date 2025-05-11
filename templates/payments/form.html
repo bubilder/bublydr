@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Bublydr{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'payments:list' %}">Платежі</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'orders:detail' order.id %}">Замовлення #{{ order.id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="alert alert-info mb-4">
+                    <h5>Інформація про замовлення</h5>
+                    <p>
+                        <strong>Замовлення #{{ order.id }}</strong><br>
+                        Столик: {% if order.table %}№{{ order.table.number }}{% else %}Не вказано{% endif %}<br>
+                        Офіціант: {{ order.waiter.get_full_name|default:order.waiter.username }}<br>
+                        Загальна сума: {{ order.total_price|floatformat:2 }} грн
+                    </p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.amount|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.payment_method|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    {{ form.notes|as_crispy_field }}
+                    
+                    <div class="mt-4">
+                        <button type="submit" name="complete_now" value="1" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Оплатити зараз
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Зберегти як очікуючий
+                        </button>
+                        <a href="{% url 'orders:detail' order.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Скасувати
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

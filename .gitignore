@@ -1,0 +1,56 @@
+# Python файли
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django файли
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media
+
+# Віртуальне середовище
+venv/
+ENV/
+env/
+.venv/
+
+# Файли редакторів
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Файли з секретами/налаштуваннями
+
+.secret
+
+# Файли міграцій (можна додавати, але краще створювати власні)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Статичні файли (якщо ви їх збираєте в одну папку через collectstatic)
+staticfiles/
+
+# Файли кешу
+*.pyc
+.cache/

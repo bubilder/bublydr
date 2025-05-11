@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Керування столиками - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Керування столиками</h1>
+    <a href="{% url 'tables:create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Додати столик
+    </a>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Місць</th>
+                        <th>Розташування</th>
+                        <th>Статус</th>
+                        <th>Активний</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for table in tables %}
+                    <tr>
+                        <td>{{ table.number }}</td>
+                        <td>{{ table.capacity }}</td>
+                        <td>{{ table.location }}</td>
+                        <td>
+                            <span class="badge {% if table.status == 'free' %}bg-success{% elif table.status == 'occupied' %}bg-danger{% elif table.status == 'reserved' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ table.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if table.is_active %}
+                            <span class="badge bg-success">Так</span>
+                            {% else %}
+                            <span class="badge bg-danger">Ні</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'tables:detail' table.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                            <a href="{% url 'tables:edit' table.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="text-muted">Столики відсутні</div>
+                            <a href="{% url 'tables:create' %}" class="btn btn-sm btn-primary mt-2">
+                                Створити перший столик
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'tables:list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> Назад до списку столиків
+    </a>
+    <a href="{% url 'tables:reservation_list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-calendar"></i> Перейти до бронювань
+    </a>
+</div>
+{% endblock %}

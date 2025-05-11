@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Столики - Bublydr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Столики ресторану</h1>
+    
+    {% if user.is_staff or user.is_admin %}
+    <div>
+        <a href="{% url 'tables:manage' %}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-gear"></i> Керувати столиками
+        </a>
+        <a href="{% url 'tables:create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Додати столик
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for table_info in tables_with_orders %}
+    {% with table=table_info.table active_order=table_info.active_order %}
+    <div class="col">
+        <div class="card h-100 {% if table.status == 'free' %}border-success{% elif table.status == 'occupied' %}border-danger{% elif table.status == 'reserved' %}border-warning{% else %}border-secondary{% endif %}">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Столик №{{ table.number }}</h5>
+                    <span class="badge {% if table.status == 'free' %}bg-success{% elif table.status == 'occupied' %}bg-danger{% elif table.status == 'reserved' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                        {{ table.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <i class="bi bi-people-fill"></i> {{ table.capacity }} місць<br>
+                    <i class="bi bi-geo-alt-fill"></i> {{ table.location }}
+                </p>
+                
+                {% if active_order %}
+                <div class="alert alert-info mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><strong>Замовлення #{{ active_order.id }}</strong></div>
+                        <span class="badge 
+                            {% if active_order.status == 'new' %}bg-light text-dark{% endif %}
+                            {% if active_order.status == 'processing' %}bg-primary{% endif %}
+                            {% if active_order.status == 'ready' %}bg-warning text-dark{% endif %}
+                            {% if active_order.status == 'delivered' %}bg-success{% endif %}
+                        ">
+                            {{ active_order.get_status_display }}
+                        </span>
+                    </div>
+                    <small>{{ active_order.items_count }} позицій на суму {{ active_order.total_price|floatformat:2 }} грн</small>
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'tables:detail' table.id %}" class="btn btn-primary">
+                        <i class="bi bi-info-circle"></i> Деталі столика
+                    </a>
+                    
+                    {% if table.status == 'free' %}
+                    <a href="{% url 'orders:create' %}?table_id={{ table.id }}" class="btn btn-success">
+                        <i class="bi bi-cart-plus"></i> Нове замовлення
+                    </a>
+                    {% elif table.status == 'occupied' and active_order %}
+                    <a href="{% url 'orders:detail' active_order.id %}" class="btn btn-outline-primary">
+                        <i class="bi bi-eye"></i> Переглянути замовлення
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            Наразі немає доступних столиків.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -23,28 +23,34 @@ class OrderForm(forms.ModelForm):
         )
 
 class OrderItemForm(forms.ModelForm):
-    """Форма для додавання страви до замовлення"""
-    
     class Meta:
         model = OrderItem
         fields = ['dish', 'quantity', 'notes']
-        
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 2}),
+        }
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Додаємо класи Bootstrap до полів форми
-        for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
         
-        # Показуємо тільки доступні страви
-        from menu.models import Dish
-        self.fields['dish'].queryset = Dish.objects.filter(is_available=True)
-        
-        # Додаткові атрибути для кількості
-        self.fields['quantity'].widget.attrs.update({
-            'min': '1',
-            'max': '20',
-            'class': 'form-control'
-        })
+        # Якщо форма вже відправлена і страва вибрана
+        if self.is_bound and 'dish' in self.data:
+            try:
+                dish_id = int(self.data.get('dish'))
+                dish = Dish.objects.get(id=dish_id)
+                
+                # Встановлюємо максимальну кількість
+                max_available = dish.available_quantity()
+                self.fields['quantity'].widget.attrs['max'] = max_available
+                self.fields['quantity'].widget.attrs['data-max'] = max_available
+                
+                # Додаємо повідомлення про максимальну кількість
+                if max_available <= 0:
+                    self.fields['quantity'].help_text = f"Неможливо приготувати цю страву! Недостатньо інгредієнтів."
+                else:
+                    self.fields['quantity'].help_text = f"Максимально доступно: {max_available}"
+            except:
+                pass
 
 class OrderStatusForm(forms.ModelForm):
     """Форма для зміни статусу замовлення"""

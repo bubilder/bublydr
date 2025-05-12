@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Dish
+from django.http import JsonResponse
 
 def menu_list(request):
     """Відображає список всіх категорій у меню"""
@@ -23,3 +24,12 @@ def dish_detail(request, dish_id):
     return render(request, 'menu/dish_detail.html', {
         'dish': dish
     })
+
+def dish_available(request, dish_id):
+    """Повертає доступну кількість порцій страви"""
+    try:
+        dish = Dish.objects.get(id=dish_id)
+        available = dish.available_quantity()
+        return JsonResponse({'available': available})
+    except Dish.DoesNotExist:
+        return JsonResponse({'available': 0})

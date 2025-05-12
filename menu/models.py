@@ -42,3 +42,32 @@ class Dish(models.Model):
     
     def __str__(self):
         return self.name
+
+    def available_quantity(self):
+        """Розраховує максимальну кількість порцій страви, яку можна приготувати з наявних інгредієнтів"""
+        try:
+            # Перевіряємо, чи є рецепт для цієї страви
+            recipe = self.recipe
+            
+            # Масимальна можлива кількість (початкове значення - дуже велике число)
+            max_possible = float('inf')  # нескінченність
+            
+            # Для кожного інгредієнта в рецепті
+            for recipe_ingredient in recipe.ingredients.all():
+                product = recipe_ingredient.product
+                required_per_dish = recipe_ingredient.quantity
+                
+                # Скільки порцій можна зробити з цього інгредієнта
+                if required_per_dish > 0:  # уникаємо ділення на нуль
+                    possible = product.current_quantity / required_per_dish
+                else:
+                    possible = float('inf')  # якщо інгредієнт не потрібен, то обмежень немає
+                    
+                # Знаходимо мінімальне можливе значення
+                max_possible = min(max_possible, possible)
+            
+            # Округляємо до цілого числа вниз
+            return int(max_possible)
+        except Exception:
+            # Якщо рецепту немає або виникла помилка
+            return 999  # повертаємо велике число як "доступно багато"

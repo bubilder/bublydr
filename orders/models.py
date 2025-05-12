@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from decimal import Decimal
-
+from inventory.models import Product  # Додай цей рядок на початок файлу
 from accounts.models import User
 from menu.models import Dish
 from tables.models import Table
@@ -67,11 +67,49 @@ class Order(models.Model):
         return sum(item.quantity for item in self.items.all())
     
     def mark_as_completed(self):
-        """Позначити замовлення як завершене"""
+        """Позначає замовлення як завершене і списує інгредієнти зі складу"""
+        # Встановлюємо статус "завершено" і час завершення
         self.status = 'completed'
         self.completed_at = timezone.now()
+        
+        # НОВИЙ КОД: змінюємо статус усіх страв на "завершено"
+        for item in self.items.all():
+            item.status = 'completed'
+            item.save()
+        
         self.save()
-    
+        
+        # Тут починається нова логіка для списання інгредієнтів
+        # Для кожної страви в замовленні
+        for order_item in self.items.all():
+            dish = order_item.dish
+            quantity = order_item.quantity
+            
+            # Перевіряємо, чи є рецепт для цієї страви
+            try:
+                recipe = dish.recipe
+                
+                # Для кожного інгредієнта в рецепті
+                for recipe_ingredient in recipe.ingredients.all():
+                    product = recipe_ingredient.product  # Правильно отримуємо продукт
+                    
+                    # Кількість, яку потрібно списати
+                    required_amount = recipe_ingredient.quantity * quantity
+                    
+                    # Зменшуємо кількість продукту
+                    product.current_quantity -= required_amount
+                    
+                    # Якщо кількість стала менше нуля, встановлюємо нуль
+                    if product.current_quantity < 0:
+                        product.current_quantity = 0
+                        
+                    # Зберігаємо зміни
+                    product.save()
+                        
+            except Exception as e:
+                # Якщо виникла помилка, просто пропускаємо
+                pass
+
     def mark_as_paid(self):
         """Позначити замовлення як оплачене"""
         self.payment_status = 'paid'

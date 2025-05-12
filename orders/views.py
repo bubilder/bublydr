@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-
 from .models import Order, OrderItem
 from .forms import OrderForm, OrderItemForm, OrderStatusForm
 from tables.models import Table
@@ -81,6 +80,7 @@ def create_order(request):
 def edit_order(request, order_id):
     """Редагування існуючого замовлення"""
     order = get_object_or_404(Order, id=order_id)
+    old_status = order.status  # Зберігаємо старий статус
     
     if order.status in ['completed', 'cancelled']:
         messages.error(request, _('Неможливо редагувати завершене або скасоване замовлення!'))
@@ -89,8 +89,18 @@ def edit_order(request, order_id):
     if request.method == 'POST':
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
-            form.save()
-            messages.success(request, _('Замовлення успішно оновлено!'))
+            new_order = form.save(commit=False)
+            new_status = new_order.status  # Отримуємо новий статус
+            
+            # Якщо статус змінився на "завершено"
+            if old_status != 'completed' and new_status == 'completed':
+                new_order.save()  # Зберігаємо зміни
+                new_order.mark_as_completed()  # Викликаємо метод для списання
+                messages.success(request, _('Замовлення завершено і продукти списано!'))
+            else:
+                new_order.save()  # Просто зберігаємо зміни
+                messages.success(request, _('Замовлення успішно оновлено!'))
+                
             return redirect('orders:detail', order_id=order.id)
     else:
         form = OrderForm(instance=order)
@@ -226,24 +236,43 @@ def complete_order(request, order_id):
     if request.method == 'POST':
         order.mark_as_completed()
         
+        # ДОДАЙ ЦІ 2 РЯДКИ:
+        order.payment_status = 'paid'  # Встановлюємо статус "Оплачено"
+        order.save()  # Зберігаємо зміни
+        
         # Якщо столик був зайнятий цим замовленням, звільняємо його
         if order.table and order.table.status == 'occupied':
             order.table.status = 'free'
             order.table.save()
         
         messages.success(request, _('Замовлення успішно завершено!'))
-        
-    return redirect('orders:detail', order_id=order.id)
+        return redirect('orders:detail', order_id=order.id)
 
 @login_required
 def order_bill(request, order_id):
     """Формування рахунку для замовлення"""
     order = get_object_or_404(Order, id=order_id)
     
-    # Групуємо елементи замовлення за статусом (для рахунку потрібні тільки готові та доставлені)
-    order_items = order.items.filter(status__in=['ready', 'delivered'])
+    # Додаємо статус 'completed' до списку
+    order_items = order.items.filter(status__in=['ready', 'delivered', 'completed'])
     
     return render(request, 'orders/bill.html', {
         'order': order,
         'order_items': order_items,
     })
+
+@login_required
+def mark_as_paid(request, order_id):
+    """Позначити замовлення як оплачене незалежно від його статусу"""
+    order = get_object_or_404(Order, id=order_id)
+    
+    if order.payment_status == 'paid':
+        messages.error(request, _('Замовлення вже оплачено!'))
+        return redirect('orders:detail', order_id=order.id)
+    
+    if request.method == 'POST':
+        order.payment_status = 'paid'
+        order.save()
+        messages.success(request, _('Замовлення успішно позначено як оплачене!'))
+        
+    return redirect('orders:detail', order_id=order.id)

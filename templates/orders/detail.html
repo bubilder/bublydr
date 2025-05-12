@@ -259,6 +259,14 @@
                     {% endif %}
                     {% endif %}
                 </div>
+                <!-- {% if order.payment_status != 'paid' %}
+                <form method="POST" action="{% url 'orders:mark_as_paid' order.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-cash-coin"></i> Позначити як оплачене
+                    </button>
+                </form>
+                {% endif %} -->
                 
                 <!-- Модальне вікно для підтвердження завершення замовлення -->
                 <div class="modal fade" id="completeOrder" tabindex="-1" aria-hidden="true">

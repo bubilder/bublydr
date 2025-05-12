@@ -21,4 +21,5 @@ urlpatterns = [
     # Оплата та завершення
     path('<int:order_id>/complete/', views.complete_order, name='complete'),
     path('<int:order_id>/bill/', views.order_bill, name='bill'),
+    path('mark-as-paid/<int:order_id>/', views.mark_as_paid, name='mark_as_paid'),
 ]

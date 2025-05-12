@@ -97,6 +97,10 @@ class Product(models.Model):
     def total_value(self):
         """Повертає загальну вартість запасів цього продукту"""
         return self.current_quantity * self.price_per_unit
+    
+    @total_value.setter
+    def total_value(self, value):
+        pass  # Нічого не робити, просто ігнорувати
 
 class Supplier(models.Model):
     """Постачальник продуктів"""

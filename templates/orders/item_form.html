@@ -69,4 +69,74 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Знаходимо поля форми
+    var dishSelect = document.querySelector('select[name="dish"]');
+    var quantityInput = document.querySelector('input[name="quantity"]');
+    
+    // Функція для оновлення максимальної кількості
+    function updateMaxQuantity() {
+        // Отримуємо ID вибраної страви
+        var dishId = dishSelect.value;
+        
+        if (dishId) {
+            // Відправляємо AJAX-запит для отримання доступної кількості
+            fetch('/menu/dish-available/' + dishId + '/')
+                .then(response => response.json())
+                .then(data => {
+                    // Встановлюємо максимальну кількість
+                    quantityInput.max = data.available;
+                    
+                    // Додаємо повідомлення
+                    var helpText = document.createElement('div');
+                    helpText.className = 'form-text';
+                    
+                    // Видаляємо старе повідомлення, якщо воно є
+                    var oldHelpText = quantityInput.parentNode.querySelector('.form-text');
+                    if (oldHelpText) {
+                        oldHelpText.remove();
+                    }
+                    
+                    if (data.available <= 0) {
+                        helpText.innerHTML = '<span class="text-danger">Неможливо приготувати! Недостатньо інгредієнтів.</span>';
+                        quantityInput.value = 0;
+                    } else {
+                        helpText.innerText = 'Максимально доступно: ' + data.available;
+                        
+                        // Якщо поточне значення більше за максимум
+                        if (parseInt(quantityInput.value) > data.available) {
+                            quantityInput.value = data.available;
+                        }
+                    }
+                    
+                    // Додаємо повідомлення до форми
+                    quantityInput.parentNode.appendChild(helpText);
+                });
+        }
+    }
+    
+    // Викликаємо функцію при завантаженні форми
+    if (dishSelect.value) {
+        updateMaxQuantity();
+    }
+    
+    // Викликаємо функцію при зміні страви
+    dishSelect.addEventListener('change', updateMaxQuantity);
+    
+    // Обмежуємо введення кількості
+    quantityInput.addEventListener('input', function() {
+        var max = parseInt(this.getAttribute('max'));
+        var value = parseInt(this.value);
+        
+        if (value > max) {
+            this.value = max;
+        }
+        
+        if (value < 1) {
+            this.value = 1;
+        }
+    });
+});
+</script>
 {% endblock %}
